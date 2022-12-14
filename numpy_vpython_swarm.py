@@ -31,7 +31,7 @@ massarray=np.array(masslist)
 dt=0.001
 
 #set up the gravitational constant
-J=1
+J=.1
 
 #draw a box around the scene of size boxsize x boxsize x boxsize
 boxsize=5
@@ -55,8 +55,12 @@ kearray=[]
 pearray=[]
 tarray=[]
 
+#set up an array to store the standard deviation of the momentum and energy of the system
+momentumStDevArray=[]
+energyStDevArray=[]
+
 #set up the time loop
-while boxsize>0.5:
+while boxsize>0.:
     #use numpy to calculate the distance between all pairs of balls
     #the distance between ball i and ball j is stored in the ith row and jth column of the matrix
 
@@ -71,6 +75,12 @@ while boxsize>0.5:
 
     #find the magnitudes of the velocities of all the balls
     vellistmag=np.sqrt(np.sum(np.array(vellist)**2,axis=1))
+
+    #calculate the standard deviation of the momentum
+    momStDev=np.std(vellistmag*massarray)
+
+    #append the standard deviation to the array
+    momentumStDevArray.append(momStDev)
 
     #find the magnitude of the item in vellist with the largest magnitude
     maxvel=np.max(np.sqrt(np.sum(np.array(vellist)**2,axis=1)))
@@ -122,28 +132,47 @@ while boxsize>0.5:
 
     for ball in balls:
         if ball.pos.x>boxsize/2:
-            ball.pos.x=boxsize/2
+            # ball.pos.x=boxsize/2
             ball.velocity.x=-ball.velocity.x
         if ball.pos.x<-boxsize/2:
-            ball.pos.x=-boxsize/2
+            # ball.pos.x=-boxsize/2
             ball.velocity.x=-ball.velocity.x
         if ball.pos.y>boxsize/2:
-            ball.pos.y=boxsize/2
+            # ball.pos.y=boxsize/2
             ball.velocity.y=-ball.velocity.y
         if ball.pos.y<-boxsize/2:
-            ball.pos.y=-boxsize/2
+            # ball.pos.y=-boxsize/2
             ball.velocity.y=-ball.velocity.y
         if ball.pos.z>boxsize/2:
-            ball.pos.z=boxsize/2
+            # ball.pos.z=boxsize/2
             ball.velocity.z=-ball.velocity.z
         if ball.pos.z<-boxsize/2:
-            ball.pos.z=-boxsize/2
+            # ball.pos.z=-boxsize/2
             ball.velocity.z=-ball.velocity.z
     #slowly shrink the box
     boxsize=boxsize-boxshrinkrate*dt
     box.length=boxsize
     box.height=boxsize
     box.width=boxsize
+
+    #calculate the kinetic energy of each ball
+    #the kinetic energy of ball i is stored in the ith row of the matrix
+    keballmatrix=0.5*massarray*(vellistmag**2)
+    #calculate the potential energy of each ball
+    #the potential energy of ball i is stored in the ith row of the matrix
+    peballmatrix=J*0.5*massmatrix*distancematrix**2
+    peballmatrix=peballmatrix.sum(axis=1)/2
+
+    #calculate the total energy of each ball
+    #the total energy of ball i is stored in the ith row of the matrix
+    teballmatrix=keballmatrix+peballmatrix
+
+    #calculate the standard deviation of the total energy
+    energyStDev=np.std(teballmatrix)
+
+    #append the standard deviation to the array
+    energyStDevArray.append(energyStDev)
+
     #calculate the total kinetic energy of the system
     ke=(0.5*massarray*(vellistmag**2)).sum()
     #calculate the total potential energy of the system
@@ -178,3 +207,14 @@ plt.legend(['kinetic energy','potential energy','total energy'])
 plt.title('Energy of a system of '+str(numball)+' balls with J='+str(J))
 #show the plot
 plt.show()
+
+#plot the standard deviation of the energy as a function of time
+plt.plot(tarray,energyStDevArray)
+#label the axes
+plt.xlabel('time')
+plt.ylabel('standard deviation of energy')
+#give the plot a title with the number of balls and the value of the gravitational constant
+plt.title('Standard deviation of energy of a system of '+str(numball)+' balls with J='+str(J))
+#show the plot
+plt.show()
+
